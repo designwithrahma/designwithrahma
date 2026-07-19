@@ -1,53 +1,27 @@
 <div align="center">
 
-# Hi, I'm Rahmathullah 👋
-
-### UI/UX Designer · Full-Stack Developer · Creative Technologist
-
-I design clear digital experiences and build practical products for real-world problems.
-
 <br>
-
-<a href="https://designwithrahma.io">
-  <img
-    src="https://img.shields.io/badge/Portfolio-designwithrahma.io-181717?style=for-the-badge&logo=googlechrome&logoColor=white"
-    alt="Designwithrahma Portfolio"
-  >
-</a>
-
-<a href="https://github.com/designwithrahma">
-  <img
-    src="https://img.shields.io/badge/GitHub-designwithrahma-181717?style=for-the-badge&logo=github&logoColor=white"
-    alt="Designwithrahma GitHub"
-  >
-</a>
-
-</div>
-
-<br>
-
----
 
 ## `rahma@github ~ $ ./contributions.sh`
 
-<div align="center">
+<br>
 
 <img
   src="./contrib-heatmap.svg"
-  width="100%"
+  width="96%"
   alt="Designwithrahma animated GitHub contribution heatmap"
 />
 
-</div>
-
-<br>
+<br><br><br>
 
 ## `rahma@github ~ $ whoami`
+
+<br>
 
 <table>
 <tr>
 
-<td width="40%" align="center" valign="middle">
+<td width="42%" align="center" valign="middle">
 
 <img
   src="./rahma-ascii.svg"
@@ -57,12 +31,12 @@ I design clear digital experiences and build practical products for real-world p
 
 </td>
 
-<td width="60%" align="center" valign="middle">
+<td width="58%" align="center" valign="middle">
 
 <img
   src="./info-card.svg"
   width="100%"
-  alt="Rahmathullah animated profile information"
+  alt="Rahmathullah animated terminal information"
 />
 
 </td>
@@ -70,10 +44,53 @@ I design clear digital experiences and build practical products for real-world p
 </tr>
 </table>
 
+<br><br><br>
+
+## `rahma@github ~ $ ./links.sh`
+
 <br>
 
-## About Me
+### UI/UX Designer · Full-Stack Developer · Creative Technologist
 
-```text
-I combine design, technology and business thinking
-to create products that are clear, useful and scalable.
+<br>
+
+<a href="https://designwithrahma.io">
+  <img
+    src="https://img.shields.io/badge/▲%20PORTFOLIO-DESIGNWITHRAHMA.IO-181717?style=flat-square&labelColor=555555&color=111111"
+    alt="Designwithrahma Portfolio"
+  >
+</a>
+
+<a href="https://github.com/designwithrahma">
+  <img
+    src="https://img.shields.io/badge/GITHUB-DESIGNWITHRAHMA-181717?style=flat-square&logo=github&logoColor=white"
+    alt="Designwithrahma GitHub"
+  >
+</a>
+
+<a href="https://www.instagram.com/designwithrahma">
+  <img
+    src="https://img.shields.io/badge/INSTAGRAM-DESIGNWITHRAHMA-E4405F?style=flat-square&logo=instagram&logoColor=white"
+    alt="Designwithrahma Instagram"
+  >
+</a>
+
+<br>
+
+<a href="https://www.linkedin.com">
+  <img
+    src="https://img.shields.io/badge/LINKEDIN-CONNECT-0A66C2?style=flat-square&logo=linkedin&logoColor=white"
+    alt="LinkedIn"
+  >
+</a>
+
+<a href="mailto:rahmathullah5975@gmail.com">
+  <img
+    src="https://img.shields.io/badge/EMAIL-CONTACT%20ME-EA4335?style=flat-square&logo=gmail&logoColor=white"
+    alt="Email Rahmathullah"
+  >
+</a>
+
+<br><br><br>
+
+</div>
