@@ -1,96 +1,40 @@
 <div align="center">
 
-<br>
+<!--
+  Animated profile assets:
+  - Contribution graph: python scripts/fetch_contributions.py && python scripts/render_heatmap_svg.py
+  - Portrait: python scripts/prep_photo.py && python scripts/make_ascii_svg.py
+  - Info panel: python scripts/make_info_card.py
+-->
 
-## `rahma@github ~ $ ./contributions.sh`
+<h3><code>rahma@github ~ $ ./contributions.sh</code></h3>
 
-<br>
-
-<img
-  src="./contrib-heatmap.svg"
-  width="96%"
-  alt="Designwithrahma animated GitHub contribution heatmap"
-/>
-
-<br><br><br>
-
-## `rahma@github ~ $ whoami`
+<img src="./contrib-heatmap.svg" width="860" alt="Designwithrahma GitHub contribution graph — refreshed automatically" />
 
 <br>
+<br>
+
+<h3><code>rahma@github ~ $ whoami</code></h3>
 
 <table>
 <tr>
-
-<td width="42%" align="center" valign="middle">
-
-<img
-  src="./rahma-ascii.svg"
-  width="100%"
-  alt="Rahmathullah animated ASCII portrait"
-/>
-
-</td>
-
-<td width="58%" align="center" valign="middle">
-
-<img
-  src="./info-card.svg"
-  width="100%"
-  alt="Rahmathullah animated terminal information"
-/>
-
-</td>
-
+<td valign="top"><img src="./rahma-ascii.svg" width="370" alt="Mohammed Rahmathullah — animated ASCII portrait" /></td>
+<td valign="top"><img src="./info-card.svg" width="490" alt="Mohammed Rahmathullah — profile, stack and current work" /></td>
 </tr>
 </table>
 
-<br><br><br>
-
-## `rahma@github ~ $ ./links.sh`
-
+<br>
 <br>
 
-### UI/UX Designer · Full-Stack Developer · Creative Technologist
+<h3><code>rahma@github ~ $ ./links.sh</code></h3>
+
+<p><b>UI/UX Designer · Full-Stack Developer · Creative Graphic Designer</b></p>
+
+[![Portfolio](https://img.shields.io/badge/Portfolio-designwithrahma.io-0d1117?style=for-the-badge&logo=vercel&logoColor=white)](https://designwithrahma.io)
+[![GitHub](https://img.shields.io/badge/GitHub-designwithrahma-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/designwithrahma)
+[![Instagram](https://img.shields.io/badge/Instagram-designwithrahma-E4405F?style=for-the-badge&logo=instagram&logoColor=white)](https://www.instagram.com/designwithrahma)
+[![Email](https://img.shields.io/badge/Email-Contact_Me-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:rahmathullah5975@gmail.com)
 
 <br>
-
-<a href="https://designwithrahma.io">
-  <img
-    src="https://img.shields.io/badge/▲%20PORTFOLIO-DESIGNWITHRAHMA.IO-181717?style=flat-square&labelColor=555555&color=111111"
-    alt="Designwithrahma Portfolio"
-  >
-</a>
-
-<a href="https://github.com/designwithrahma">
-  <img
-    src="https://img.shields.io/badge/GITHUB-DESIGNWITHRAHMA-181717?style=flat-square&logo=github&logoColor=white"
-    alt="Designwithrahma GitHub"
-  >
-</a>
-
-<a href="https://www.instagram.com/designwithrahma">
-  <img
-    src="https://img.shields.io/badge/INSTAGRAM-DESIGNWITHRAHMA-E4405F?style=flat-square&logo=instagram&logoColor=white"
-    alt="Designwithrahma Instagram"
-  >
-</a>
-
-<br>
-
-<a href="https://www.linkedin.com">
-  <img
-    src="https://img.shields.io/badge/LINKEDIN-CONNECT-0A66C2?style=flat-square&logo=linkedin&logoColor=white"
-    alt="LinkedIn"
-  >
-</a>
-
-<a href="mailto:rahmathullah5975@gmail.com">
-  <img
-    src="https://img.shields.io/badge/EMAIL-CONTACT%20ME-EA4335?style=flat-square&logo=gmail&logoColor=white"
-    alt="Email Rahmathullah"
-  >
-</a>
-
-<br><br><br>
 
 </div>

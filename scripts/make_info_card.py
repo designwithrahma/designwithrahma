@@ -1,340 +1,163 @@
+"""Generate an animated neofetch-style profile card for the GitHub README."""
 from __future__ import annotations
 
 import html
+import os
 from pathlib import Path
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-OUTPUT_FILE = PROJECT_ROOT / "info-card.svg"
+OUTPUT = PROJECT_ROOT / "info-card.svg"
+STATIC = bool(os.environ.get("STATIC"))
 
-WIDTH = 720
-HEIGHT = 560
+WIDTH = 480
+HEIGHT = 376
+PADDING = 20
+TITLEBAR_HEIGHT = 30
+KEY_X = PADDING
+VALUE_X = 112
+LINE_HEIGHT = 18.2
 
-PROFILE_LINES = [
-    ("name", "Mohammed Rahmathullah"),
-    ("username", "@designwithrahma"),
-    ("role", "UI/UX Designer & Full-Stack Developer"),
-    ("focus", "Digital Products & Visual Experiences"),
-    ("building", "HBS Business Systems"),
-    ("project", "MONO//SHIFT"),
-    ("stack", "Next.js · TypeScript · PostgreSQL · Python"),
-    ("creative", "Photoshop · Figma · Visual Storytelling"),
-    ("location", "Sri Lanka"),
-    ("website", "designwithrahma.io"),
+BG = "#0d1117"
+BG_TOP = "#111722"
+FRAME = "#30363d"
+MUTED = "#7d8590"
+TEXT = "#c9d1d9"
+KEY = "#ffa657"
+SECTION = "#58a6ff"
+GREEN = "#3fb950"
+CYAN = "#22d3ee"
+
+ROWS = [
+    ("host",),
+    ("kv", "Now", "UI/UX Designer & Full-Stack Developer"),
+    ("kv", "Also", "Creative Graphic Designer & Video Editor"),
+    ("kv", "Study", "ICT Student · NDICT NVQ Level 5"),
+    ("kv", "Based", "Kattankudy, Sri Lanka"),
+    ("gap",),
+    ("section", "Stack"),
+    ("kv", "Frontend", "Next.js, Bootstrap, JavaScript, HTML, CSS"),
+    ("kv", "Backend", "Node.js, PostgreSQL, Supabase"),
+    ("kv", "Design", "Photoshop, Illustrator, Figma"),
+    ("kv", "Tools", "GitHub, Vercel, Python, AI Tools"),
+    ("gap",),
+    ("section", "Building"),
+    ("bullet", "HBS Cloud ERP"),
+    ("bullet", "MONO//SHIFT"),
+    ("bullet", "Designwithrahma"),
 ]
 
 
-def create_text_rows() -> str:
-    rows: list[str] = []
+def escape(value: str) -> str:
+    return html.escape(value)
 
-    start_y = 150
-    row_gap = 36
 
-    for index, (label, value) in enumerate(PROFILE_LINES):
-        y_position = start_y + index * row_gap
-        animation_delay = 0.45 + index * 0.12
-
-        safe_label = html.escape(label)
-        safe_value = html.escape(value)
-
-        rows.append(
-            f"""
-            <g
-                class="info-row"
-                style="animation-delay: {animation_delay:.2f}s"
-            >
-                <text
-                    class="label"
-                    x="54"
-                    y="{y_position}"
-                >{safe_label}</text>
-
-                <text
-                    class="separator"
-                    x="165"
-                    y="{y_position}"
-                >:</text>
-
-                <text
-                    class="value"
-                    x="192"
-                    y="{y_position}"
-                >{safe_value}</text>
-            </g>
-            """
-        )
-
-    return "".join(rows)
+def animate_row(inner: str, index: int) -> str:
+    if STATIC:
+        return f"<g>{inner}</g>"
+    delay = 0.15 + index * 0.055
+    return (
+        '<g opacity="0" transform="translate(0,5)">'
+        f'{inner}'
+        f'<animate attributeName="opacity" from="0" to="1" begin="{delay:.2f}s" '
+        'dur="0.38s" fill="freeze"/>'
+        '<animateTransform attributeName="transform" type="translate" '
+        f'from="0 5" to="0 0" begin="{delay:.2f}s" dur="0.38s" fill="freeze" '
+        'calcMode="spline" keySplines="0.2 0.8 0.2 1"/>'
+        '</g>'
+    )
 
 
 def build_svg() -> str:
-    rows = create_text_rows()
+    parts: list[str] = [
+        (
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{HEIGHT}" '
+            f'viewBox="0 0 {WIDTH} {HEIGHT}" '
+            'font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" '
+            'role="img" aria-labelledby="title description">'
+        ),
+        '<title id="title">Mohammed Rahmathullah profile information</title>',
+        '<desc id="description">An animated neofetch-style profile card with roles, stack and current projects.</desc>',
+        '<defs>',
+        f'<linearGradient id="card-background" x1="0" y1="0" x2="0" y2="1">'
+        f'<stop offset="0" stop-color="{BG_TOP}"/>'
+        f'<stop offset="1" stop-color="{BG}"/>'
+        '</linearGradient>',
+        '</defs>',
+        f'<rect width="{WIDTH}" height="{HEIGHT}" rx="12" fill="url(#card-background)"/>',
+        (
+            f'<rect x="0.5" y="0.5" width="{WIDTH - 1}" height="{HEIGHT - 1}" rx="12" '
+            f'fill="none" stroke="{FRAME}"/>'
+        ),
+        f'<line x1="0" y1="{TITLEBAR_HEIGHT}" x2="{WIDTH}" y2="{TITLEBAR_HEIGHT}" stroke="{FRAME}"/>',
+    ]
 
-    return f"""<svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="{WIDTH}"
-    height="{HEIGHT}"
-    viewBox="0 0 {WIDTH} {HEIGHT}"
-    role="img"
-    aria-labelledby="title description"
->
-    <title id="title">Rahmathullah profile information</title>
+    for index, dot_color in enumerate(("#ff5f56", "#ffbd2e", "#27c93f")):
+        parts.append(
+            f'<circle cx="{PADDING + index * 16}" cy="{TITLEBAR_HEIGHT / 2}" r="5" fill="{dot_color}"/>'
+        )
 
-    <desc id="description">
-        An animated terminal-style profile card for Mohammed Rahmathullah.
-    </desc>
+    parts.append(
+        f'<text x="{WIDTH / 2}" y="{TITLEBAR_HEIGHT / 2 + 4}" fill="{MUTED}" '
+        'font-size="12" text-anchor="middle">rahma@github: ~$ neofetch</text>'
+    )
 
-    <defs>
-        <linearGradient
-            id="panel-border"
-            x1="0"
-            y1="0"
-            x2="1"
-            y2="1"
-        >
-            <stop offset="0%" stop-color="#58a6ff"/>
-            <stop offset="50%" stop-color="#8b949e"/>
-            <stop offset="100%" stop-color="#3fb950"/>
-        </linearGradient>
-    </defs>
+    y = TITLEBAR_HEIGHT + 29
+    for index, row in enumerate(ROWS):
+        kind = row[0]
 
-    <style>
-        .panel {{
-            fill: #0d1117;
-            stroke: url(#panel-border);
-            stroke-width: 2;
-        }}
+        if kind == "gap":
+            y += LINE_HEIGHT * 0.45
+            continue
 
-        .top-bar {{
-            fill: #161b22;
-        }}
+        if kind == "host":
+            inner = (
+                f'<text x="{KEY_X}" y="{y:.1f}" font-size="14" font-weight="700">'
+                f'<tspan fill="{GREEN}">rahma</tspan>'
+                f'<tspan fill="{MUTED}">@</tspan>'
+                f'<tspan fill="{CYAN}">github</tspan></text>'
+                f'<line x1="{KEY_X + 112}" y1="{y - 4:.1f}" x2="{WIDTH - PADDING}" '
+                f'y2="{y - 4:.1f}" stroke="{FRAME}" stroke-opacity="0.8"/>'
+            )
+        elif kind == "section":
+            title = escape(row[1])
+            line_start = KEY_X + 20 + len(row[1]) * 7.5
+            inner = (
+                f'<text x="{KEY_X}" y="{y:.1f}" fill="{SECTION}" font-size="12.2" '
+                f'font-weight="700">&#8212; {title}</text>'
+                f'<line x1="{line_start:.1f}" y1="{y - 4:.1f}" x2="{WIDTH - PADDING}" '
+                f'y2="{y - 4:.1f}" stroke="{FRAME}" stroke-opacity="0.8"/>'
+            )
+        elif kind == "kv":
+            key, value = escape(row[1]), escape(row[2])
+            inner = (
+                f'<text x="{KEY_X}" y="{y:.1f}" fill="{KEY}" font-size="11.7" '
+                f'font-weight="700">{key}</text>'
+                f'<text x="{VALUE_X}" y="{y:.1f}" fill="{TEXT}" font-size="11.7">{value}</text>'
+            )
+        elif kind == "bullet":
+            text = escape(row[1])
+            inner = (
+                f'<circle cx="{KEY_X + 3}" cy="{y - 4:.1f}" r="2.5" fill="{GREEN}"/>'
+                f'<text x="{KEY_X + 14}" y="{y:.1f}" fill="{TEXT}" font-size="11.8">{text}</text>'
+            )
+        else:
+            continue
 
-        .terminal-title,
-        .prompt,
-        .label,
-        .separator,
-        .value {{
-            font-family:
-                "Cascadia Code",
-                "SFMono-Regular",
-                Consolas,
-                "Liberation Mono",
-                monospace;
-        }}
+        parts.append(animate_row(inner, index))
+        y += LINE_HEIGHT
 
-        .terminal-title {{
-            fill: #8b949e;
-            font-size: 17px;
-            font-weight: 600;
-        }}
-
-        .prompt {{
-            fill: #3fb950;
-            font-size: 22px;
-            font-weight: 700;
-            opacity: 0;
-            animation: reveal 0.35s ease forwards;
-            animation-delay: 0.15s;
-        }}
-
-        .cursor {{
-            fill: #58a6ff;
-            animation: blink 0.9s steps(2, start) infinite;
-        }}
-
-        .info-row {{
-            opacity: 0;
-            transform: translateX(-12px);
-            animation: reveal-row 0.4s ease-out forwards;
-        }}
-
-        .label {{
-            fill: #8b949e;
-            font-size: 17px;
-            font-weight: 600;
-        }}
-
-        .separator {{
-            fill: #58a6ff;
-            font-size: 17px;
-            font-weight: 700;
-        }}
-
-        .value {{
-            fill: #c9d1d9;
-            font-size: 17px;
-            font-weight: 600;
-        }}
-
-        .footer {{
-            fill: #6e7681;
-            font-family:
-                "Cascadia Code",
-                "SFMono-Regular",
-                Consolas,
-                monospace;
-            font-size: 14px;
-            opacity: 0;
-            animation: reveal 0.4s ease forwards;
-            animation-delay: 1.8s;
-        }}
-
-        @keyframes reveal {{
-            from {{
-                opacity: 0;
-            }}
-
-            to {{
-                opacity: 1;
-            }}
-        }}
-
-        @keyframes reveal-row {{
-            from {{
-                opacity: 0;
-                transform: translateX(-12px);
-            }}
-
-            to {{
-                opacity: 1;
-                transform: translateX(0);
-            }}
-        }}
-
-        @keyframes blink {{
-            0%,
-            45% {{
-                opacity: 1;
-            }}
-
-            46%,
-            100% {{
-                opacity: 0;
-            }}
-        }}
-
-        @media (prefers-color-scheme: light) {{
-            .panel {{
-                fill: #ffffff;
-            }}
-
-            .top-bar {{
-                fill: #f6f8fa;
-            }}
-
-            .terminal-title,
-            .label {{
-                fill: #57606a;
-            }}
-
-            .value {{
-                fill: #24292f;
-            }}
-
-            .footer {{
-                fill: #6e7781;
-            }}
-        }}
-
-        @media (prefers-reduced-motion: reduce) {{
-            .prompt,
-            .info-row,
-            .footer {{
-                opacity: 1;
-                transform: none;
-                animation: none;
-            }}
-
-            .cursor {{
-                animation: none;
-            }}
-        }}
-    </style>
-
-    <rect
-        class="panel"
-        x="1"
-        y="1"
-        width="{WIDTH - 2}"
-        height="{HEIGHT - 2}"
-        rx="18"
-    />
-
-    <path
-        class="top-bar"
-        d="
-            M 19 1
-            H {WIDTH - 19}
-            Q {WIDTH - 1} 1 {WIDTH - 1} 19
-            V 62
-            H 1
-            V 19
-            Q 1 1 19 1
-            Z
-        "
-    />
-
-    <circle cx="28" cy="31" r="7" fill="#ff5f56"/>
-    <circle cx="52" cy="31" r="7" fill="#ffbd2e"/>
-    <circle cx="76" cy="31" r="7" fill="#27c93f"/>
-
-    <text
-        class="terminal-title"
-        x="104"
-        y="38"
-    >rahma@designwithrahma — profile</text>
-
-    <text
-        class="prompt"
-        x="44"
-        y="106"
-    >$ whoami</text>
-
-    <rect
-        class="cursor"
-        x="158"
-        y="86"
-        width="12"
-        height="24"
-        rx="2"
-    />
-
-    {rows}
-
-    <line
-        x1="44"
-        y1="518"
-        x2="676"
-        y2="518"
-        stroke="#30363d"
-        stroke-width="1"
-    />
-
-    <text
-        class="footer"
-        x="44"
-        y="544"
-    >building thoughtful products, one commit at a time.</text>
-</svg>
-"""
+    parts.append('</svg>')
+    return ''.join(parts)
 
 
 def main() -> None:
     try:
-        svg_content = build_svg()
-
-        OUTPUT_FILE.write_text(
-            svg_content,
-            encoding="utf-8",
-        )
-
-        print(f"Info card created: {OUTPUT_FILE}")
-        print(f"Canvas size: {WIDTH} x {HEIGHT}")
-
+        svg = build_svg()
+        OUTPUT.write_text(svg, encoding="utf-8")
+        print(f"wrote {OUTPUT} ({len(svg)} bytes; {WIDTH}x{HEIGHT})")
     except Exception as error:
-        raise SystemExit(
-            f"Info card generation failed: {error}"
-        ) from error
+        raise SystemExit(f"Info card generation failed: {error}") from error
 
 
 if __name__ == "__main__":

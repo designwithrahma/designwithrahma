@@ -1,18 +1,93 @@
 {
   "username": "designwithrahma",
-  "generated_at": "2026-07-19T09:24:36.207201+00:00",
+  "generated_at": "2026-07-19T10:55:24.783056+00:00",
+  "range": {
+    "start": "2025-07-20",
+    "end": "2026-07-19"
+  },
   "period": {
     "from": "2025-07-20",
     "to": "2026-07-19"
   },
+  "total_contributions": 7,
+  "active_days": 2,
+  "avg_per_active_day": 3.5,
+  "current_streak": {
+    "length": 1,
+    "start": "2026-07-19",
+    "end": "2026-07-19"
+  },
+  "longest_streak": {
+    "length": 1,
+    "start": "2026-04-15",
+    "end": "2026-04-15"
+  },
+  "best_day": {
+    "date": "2026-07-19",
+    "count": 5
+  },
+  "monthly": [
+    {
+      "month": "2025-07",
+      "total": 0
+    },
+    {
+      "month": "2025-08",
+      "total": 0
+    },
+    {
+      "month": "2025-09",
+      "total": 0
+    },
+    {
+      "month": "2025-10",
+      "total": 0
+    },
+    {
+      "month": "2025-11",
+      "total": 0
+    },
+    {
+      "month": "2025-12",
+      "total": 0
+    },
+    {
+      "month": "2026-01",
+      "total": 0
+    },
+    {
+      "month": "2026-02",
+      "total": 0
+    },
+    {
+      "month": "2026-03",
+      "total": 0
+    },
+    {
+      "month": "2026-04",
+      "total": 2
+    },
+    {
+      "month": "2026-05",
+      "total": 0
+    },
+    {
+      "month": "2026-06",
+      "total": 0
+    },
+    {
+      "month": "2026-07",
+      "total": 5
+    }
+  ],
   "summary": {
-    "total_contributions": 5,
+    "total_contributions": 7,
     "active_days": 2,
     "current_streak": 1,
     "longest_streak": 1,
     "best_day": {
       "date": "2026-07-19",
-      "count": 3,
+      "count": 5,
       "level": 4
     }
   },
@@ -29,7 +104,7 @@
     "2026-04": 2,
     "2026-05": 0,
     "2026-06": 0,
-    "2026-07": 3
+    "2026-07": 5
   },
   "days": [
     {
@@ -1380,7 +1455,7 @@
     {
       "date": "2026-04-15",
       "count": 2,
-      "level": 3
+      "level": 2
     },
     {
       "date": "2026-04-16",
@@ -1854,7 +1929,7 @@
     },
     {
       "date": "2026-07-19",
-      "count": 3,
+      "count": 5,
       "level": 4
     }
   ]

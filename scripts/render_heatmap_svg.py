@@ -1,580 +1,242 @@
+#!/usr/bin/env python3
+"""Render an animated GitHub-style contribution heatmap SVG."""
 from __future__ import annotations
 
-import html
+import datetime as dt
 import json
-import math
-from datetime import date
 from pathlib import Path
 from typing import Any
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+INPUT = PROJECT_ROOT / "data" / "contributions.json"
+OUTPUT = PROJECT_ROOT / "contrib-heatmap.svg"
 
-INPUT_FILE = PROJECT_ROOT / "data" / "contributions.json"
-OUTPUT_FILE = PROJECT_ROOT / "contrib-heatmap.svg"
+PALETTE = ["#161b22", "#0e4429", "#006d32", "#26a641", "#39d353", "#69f0a0"]
+CELL = 12
+GAP = 3
+STEP = CELL + GAP
+PAD = 22
+LEFT_LABEL_WIDTH = 30
+TOP_LABEL_HEIGHT = 20
+TITLEBAR_HEIGHT = 30
 
-CELL_SIZE = 12
-CELL_GAP = 4
-CELL_STEP = CELL_SIZE + CELL_GAP
+BG = "#0a0e14"
+BG_TOP = "#0d1420"
+FRAME = "#1f6feb"
+MUTED = "#7d8590"
+ACCENT = "#22d3ee"
+GREEN = "#39d353"
+GOLD = "#f2cc60"
 
-GRAPH_X = 56
-GRAPH_Y = 48
-
-TOP_PADDING = 18
-RIGHT_PADDING = 30
-BOTTOM_PADDING = 92
-
-DAY_LABELS = {
-    1: "Mon",
-    3: "Wed",
-    5: "Fri",
-}
-
-
-def load_contribution_data() -> dict[str, Any]:
-    if not INPUT_FILE.exists():
-        raise FileNotFoundError(
-            "data/contributions.json not found. "
-            "Run python scripts/fetch_contributions.py first."
-        )
-
-    data = json.loads(
-        INPUT_FILE.read_text(encoding="utf-8")
-    )
-
-    if not isinstance(data, dict):
-        raise ValueError(
-            "Contribution JSON root must be an object."
-        )
-
-    days = data.get("days")
-
-    if not isinstance(days, list) or not days:
-        raise ValueError(
-            "Contribution JSON does not contain valid days."
-        )
-
-    return data
+COLUMN_DELAY = 0.018
+ROW_DELAY = 0.045
+CELL_DURATION = 0.42
 
 
-def clamp_level(value: Any) -> int:
-    try:
-        level = int(value)
-    except (TypeError, ValueError):
+def level_for(count: int) -> int:
+    if count <= 0:
         return 0
-
-    return max(0, min(level, 4))
-
-
-def format_number(value: Any) -> str:
-    try:
-        return f"{int(value):,}"
-    except (TypeError, ValueError):
-        return "0"
-
-
-def create_day_cells(
-    days: list[dict[str, Any]],
-    leading_cells: int,
-) -> tuple[str, int]:
-    cells: list[str] = []
-
-    total_slots = leading_cells + len(days)
-    week_count = math.ceil(total_slots / 7)
-
-    for day_index, day in enumerate(days):
-        slot_index = leading_cells + day_index
-
-        week_index = slot_index // 7
-        weekday_index = slot_index % 7
-
-        x_position = GRAPH_X + week_index * CELL_STEP
-        y_position = GRAPH_Y + weekday_index * CELL_STEP
-
-        level = clamp_level(day.get("level", 0))
-
-        raw_count = day.get("count", 0)
-
-        try:
-            count = max(0, int(raw_count))
-        except (TypeError, ValueError):
-            count = 0
-
-        raw_date = str(day.get("date", "Unknown date"))
-
-        escaped_date = html.escape(raw_date)
-        escaped_title = html.escape(
-            f"{count} contribution"
-            f"{'' if count == 1 else 's'} on {raw_date}"
-        )
-
-        animation_delay = (
-            week_index * 0.012
-            + weekday_index * 0.008
-        )
-
-        cells.append(
-            f"""
-            <rect
-                class="day-cell level-{level}"
-                x="{x_position}"
-                y="{y_position}"
-                width="{CELL_SIZE}"
-                height="{CELL_SIZE}"
-                rx="3"
-                data-date="{escaped_date}"
-                data-count="{count}"
-                style="animation-delay: {animation_delay:.3f}s"
-            >
-                <title>{escaped_title}</title>
-            </rect>
-            """
-        )
-
-    return "".join(cells), week_count
+    if count <= 5:
+        return 1
+    if count <= 15:
+        return 2
+    if count <= 30:
+        return 3
+    if count <= 50:
+        return 4
+    return 5
 
 
-def create_day_labels() -> str:
-    labels: list[str] = []
+def build_grid(days: list[dict[str, Any]]) -> list[list[tuple[str, int, int] | None]]:
+    first = dt.date.fromisoformat(days[0]["date"])
+    leading = (first.weekday() + 1) % 7
+    grid: list[list[tuple[str, int, int] | None]] = []
+    column: list[tuple[str, int, int] | None] = [None] * leading
 
-    for weekday_index, label in DAY_LABELS.items():
-        y_position = (
-            GRAPH_Y
-            + weekday_index * CELL_STEP
-            + CELL_SIZE - 2
-        )
+    for item in days:
+        day = dt.date.fromisoformat(item["date"])
+        weekday = (day.weekday() + 1) % 7
+        while len(column) < weekday:
+            column.append(None)
+        count = max(0, int(item.get("count", 0)))
+        column.append((item["date"], count, level_for(count)))
+        if len(column) == 7:
+            grid.append(column)
+            column = []
 
-        labels.append(
-            f"""
-            <text
-                class="axis-label"
-                x="8"
-                y="{y_position}"
-            >{label}</text>
-            """
-        )
-
-    return "".join(labels)
-
-
-def create_month_labels(
-    days: list[dict[str, Any]],
-    leading_cells: int,
-) -> str:
-    labels: list[str] = []
-
-    previous_month: str | None = None
-    previous_label_week = -10
-
-    for day_index, day in enumerate(days):
-        raw_date = day.get("date")
-
-        if not isinstance(raw_date, str):
-            continue
-
-        try:
-            parsed_date = date.fromisoformat(raw_date)
-        except ValueError:
-            continue
-
-        month_key = parsed_date.strftime("%Y-%m")
-
-        if month_key == previous_month:
-            continue
-
-        slot_index = leading_cells + day_index
-        week_index = slot_index // 7
-
-        # Avoid month names overlapping when a month
-        # starts very close to the previous label.
-        if week_index - previous_label_week < 3:
-            previous_month = month_key
-            continue
-
-        x_position = GRAPH_X + week_index * CELL_STEP
-
-        labels.append(
-            f"""
-            <text
-                class="month-label"
-                x="{x_position}"
-                y="30"
-            >{parsed_date.strftime("%b")}</text>
-            """
-        )
-
-        previous_month = month_key
-        previous_label_week = week_index
-
-    return "".join(labels)
+    if column:
+        column.extend([None] * (7 - len(column)))
+        grid.append(column)
+    return grid
 
 
-def create_legend(
-    graph_width: int,
-    graph_bottom: int,
-) -> str:
-    legend_x = GRAPH_X + graph_width - 156
-    legend_y = graph_bottom + 24
+def render(data: dict[str, Any]) -> str:
+    days = data["days"]
+    grid = build_grid(days)
+    column_count = len(grid)
+    art_width = column_count * STEP
+    art_height = 7 * STEP
 
-    legend_parts = [
-        f"""
-        <text
-            class="legend-label"
-            x="{legend_x}"
-            y="{legend_y + 10}"
-        >Less</text>
-        """
+    month_labels: list[tuple[int, str]] = []
+    seen_months: set[tuple[int, int]] = set()
+    for column_index, column in enumerate(grid):
+        for cell in column:
+            if cell is None:
+                continue
+            day = dt.date.fromisoformat(cell[0])
+            month_key = (day.year, day.month)
+            if month_key not in seen_months and day.day <= 7:
+                seen_months.add(month_key)
+                month_labels.append((column_index, day.strftime("%b")))
+            break
+
+    canvas_width = PAD + LEFT_LABEL_WIDTH + art_width + PAD
+    stats_height = 88
+    canvas_height = TITLEBAR_HEIGHT + TOP_LABEL_HEIGHT + art_height + stats_height + PAD
+
+    css = f"""
+@keyframes cell-reveal {{
+  0%   {{ opacity: 0; transform: translateY(-6px); }}
+  100% {{ opacity: 1; transform: translateY(0); }}
+}}
+.cell {{ opacity: 0; animation: cell-reveal {CELL_DURATION:.2f}s cubic-bezier(.2,.8,.2,1) both; }}
+@media (prefers-reduced-motion: reduce) {{ .cell {{ opacity: 1; animation: none; }} }}
+""".strip()
+
+    parts: list[str] = [
+        (
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="{canvas_width}" '
+            f'height="{canvas_height}" viewBox="0 0 {canvas_width} {canvas_height}" '
+            'font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" '
+            'role="img" aria-labelledby="title description">'
+        ),
+        '<title id="title">Designwithrahma animated GitHub contribution graph</title>',
+        '<desc id="description">A one-year contribution calendar with animated cells and streak statistics.</desc>',
+        f'<style>{css}</style>',
+        '<defs>',
+        f'<linearGradient id="heatmap-background" x1="0" y1="0" x2="0" y2="1">'
+        f'<stop offset="0" stop-color="{BG_TOP}"/>'
+        f'<stop offset="1" stop-color="{BG}"/>'
+        '</linearGradient>',
+        '</defs>',
+        f'<rect width="{canvas_width}" height="{canvas_height}" rx="12" fill="url(#heatmap-background)"/>',
+        (
+            f'<rect x="0.5" y="0.5" width="{canvas_width - 1}" height="{canvas_height - 1}" '
+            f'rx="12" fill="none" stroke="{FRAME}" stroke-width="1" stroke-opacity="0.55"/>'
+        ),
+        (
+            f'<line x1="0" y1="{TITLEBAR_HEIGHT}" x2="{canvas_width}" y2="{TITLEBAR_HEIGHT}" '
+            f'stroke="{FRAME}" stroke-opacity="0.35"/>'
+        ),
     ]
 
-    first_cell_x = legend_x + 38
-
-    for level in range(5):
-        x_position = first_cell_x + level * 17
-
-        legend_parts.append(
-            f"""
-            <rect
-                class="legend-cell level-{level}"
-                x="{x_position}"
-                y="{legend_y}"
-                width="11"
-                height="11"
-                rx="3"
-            />
-            """
+    for index, dot_color in enumerate(("#ff5f56", "#ffbd2e", "#27c93f")):
+        parts.append(
+            f'<circle cx="{PAD + index * 16}" cy="{TITLEBAR_HEIGHT / 2}" r="5" fill="{dot_color}"/>'
         )
 
-    legend_parts.append(
-        f"""
-        <text
-            class="legend-label"
-            x="{first_cell_x + 90}"
-            y="{legend_y + 10}"
-        >More</text>
-        """
+    parts.append(
+        f'<text x="{canvas_width / 2}" y="{TITLEBAR_HEIGHT / 2 + 4}" fill="{MUTED}" '
+        'font-size="12" text-anchor="middle">rahma@github: ~/contributions --graph</text>'
     )
 
-    return "".join(legend_parts)
+    grid_top = TITLEBAR_HEIGHT + TOP_LABEL_HEIGHT
+    grid_left = PAD + LEFT_LABEL_WIDTH
 
+    for column_index, label in month_labels:
+        x = grid_left + column_index * STEP
+        parts.append(
+            f'<text x="{x}" y="{TITLEBAR_HEIGHT + 14}" fill="{MUTED}" font-size="10">{label}</text>'
+        )
 
-def create_stats(
-    summary: dict[str, Any],
-    graph_bottom: int,
-) -> str:
-    total = format_number(
-        summary.get("total_contributions", 0)
+    for weekday_index, label in ((1, "Mon"), (3, "Wed"), (5, "Fri")):
+        y = grid_top + weekday_index * STEP + CELL * 0.78
+        parts.append(
+            f'<text x="{PAD}" y="{y:.1f}" fill="{MUTED}" font-size="9">{label}</text>'
+        )
+
+    for column_index, column in enumerate(grid):
+        x = grid_left + column_index * STEP
+        for row_index, cell in enumerate(column):
+            if cell is None:
+                continue
+            date_text, count, level = cell
+            y = grid_top + row_index * STEP
+            delay = column_index * COLUMN_DELAY + row_index * ROW_DELAY
+            plural = "s" if count != 1 else ""
+            parts.append(
+                f'<rect class="cell" x="{x}" y="{y}" width="{CELL}" height="{CELL}" '
+                f'rx="2.5" fill="{PALETTE[level]}" style="animation-delay:{delay:.3f}s">'
+                f'<title>{date_text}: {count} contribution{plural}</title></rect>'
+            )
+
+    legend_y = grid_top + art_height + 6
+    legend_x = canvas_width - PAD - (len(PALETTE) * (CELL - 1) + 70)
+    parts.append(
+        f'<text x="{legend_x}" y="{legend_y + CELL * 0.8:.1f}" fill="{MUTED}" '
+        'font-size="10" text-anchor="end">Less</text>'
+    )
+    cursor_x = legend_x + 8
+    for color in PALETTE:
+        parts.append(
+            f'<rect x="{cursor_x}" y="{legend_y}" width="{CELL - 1}" height="{CELL - 1}" '
+            f'rx="2.2" fill="{color}"/>'
+        )
+        cursor_x += CELL
+    parts.append(
+        f'<text x="{cursor_x + 4}" y="{legend_y + CELL * 0.8:.1f}" fill="{MUTED}" '
+        'font-size="10">More</text>'
     )
 
-    active_days = format_number(
-        summary.get("active_days", 0)
+    separator_y = legend_y + CELL + 14
+    parts.append(
+        f'<line x1="0" y1="{separator_y}" x2="{canvas_width}" y2="{separator_y}" '
+        f'stroke="{FRAME}" stroke-opacity="0.25"/>'
     )
 
-    current_streak = format_number(
-        summary.get("current_streak", 0)
+    current = int(data["current_streak"]["length"])
+    longest = int(data["longest_streak"]["length"])
+    total = int(data["total_contributions"])
+    best = data["best_day"]
+    date_range = data["range"]
+
+    line_y = separator_y + 24
+    parts.append(
+        f'<text x="{PAD}" y="{line_y}" font-size="13" fill="{GREEN}">'
+        f'<tspan font-weight="700">{total:,}</tspan>'
+        f'<tspan fill="{MUTED}"> contributions in the last year</tspan></text>'
+    )
+    parts.append(
+        f'<text x="{canvas_width - PAD}" y="{line_y}" font-size="12" fill="{MUTED}" '
+        f'text-anchor="end">{date_range["start"]} &#8594; {date_range["end"]}</text>'
     )
 
-    longest_streak = format_number(
-        summary.get("longest_streak", 0)
+    line_y += 24
+    parts.append(
+        f'<text x="{PAD}" y="{line_y}" font-size="13" fill="{MUTED}">current streak '
+        f'<tspan fill="{ACCENT}" font-weight="700">{current} days</tspan>'
+        f'<tspan fill="{MUTED}">   &#183;   longest </tspan>'
+        f'<tspan fill="{ACCENT}" font-weight="700">{longest} days</tspan></text>'
+    )
+    parts.append(
+        f'<text x="{canvas_width - PAD}" y="{line_y}" font-size="12" fill="{MUTED}" '
+        f'text-anchor="end">best day <tspan fill="{GOLD}" font-weight="700">'
+        f'{int(best["count"])}</tspan> on {best["date"]}</text>'
     )
 
-    stats_y = graph_bottom + 63
-
-    return f"""
-        <g class="stats">
-            <text
-                class="stat-primary"
-                x="{GRAPH_X}"
-                y="{stats_y}"
-            >{total} contributions</text>
-
-            <text
-                class="stat-secondary"
-                x="{GRAPH_X + 190}"
-                y="{stats_y}"
-            >{active_days} active days</text>
-
-            <text
-                class="stat-secondary"
-                x="{GRAPH_X + 360}"
-                y="{stats_y}"
-            >Current streak: {current_streak}d</text>
-
-            <text
-                class="stat-secondary"
-                x="{GRAPH_X + 565}"
-                y="{stats_y}"
-            >Longest: {longest_streak}d</text>
-        </g>
-    """
-
-
-def build_svg(data: dict[str, Any]) -> str:
-    days = data["days"]
-    summary = data.get("summary", {})
-    username = html.escape(
-        str(data.get("username", "designwithrahma"))
-    )
-
-    first_date = date.fromisoformat(days[0]["date"])
-
-    # Python weekday:
-    # Monday = 0, Sunday = 6.
-    # Heatmap rows:
-    # Sunday = 0, Monday = 1.
-    leading_cells = (first_date.weekday() + 1) % 7
-
-    day_cells, week_count = create_day_cells(
-        days,
-        leading_cells,
-    )
-
-    graph_width = (
-        week_count * CELL_STEP
-        - CELL_GAP
-    )
-
-    graph_height = (
-        7 * CELL_STEP
-        - CELL_GAP
-    )
-
-    graph_bottom = GRAPH_Y + graph_height
-
-    width = (
-        GRAPH_X
-        + graph_width
-        + RIGHT_PADDING
-    )
-
-    height = (
-        GRAPH_Y
-        + graph_height
-        + BOTTOM_PADDING
-    )
-
-    month_labels = create_month_labels(
-        days,
-        leading_cells,
-    )
-
-    day_labels = create_day_labels()
-
-    legend = create_legend(
-        graph_width,
-        graph_bottom,
-    )
-
-    stats = create_stats(
-        summary,
-        graph_bottom,
-    )
-
-    return f"""<svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="{width}"
-    height="{height}"
-    viewBox="0 0 {width} {height}"
-    role="img"
-    aria-labelledby="title description"
->
-    <title id="title">
-        {username} animated GitHub contribution heatmap
-    </title>
-
-    <desc id="description">
-        GitHub contribution activity for the previous year,
-        including total contributions and streak statistics.
-    </desc>
-
-    <style>
-        .background {{
-            fill: #0d1117;
-            stroke: #30363d;
-            stroke-width: 1;
-        }}
-
-        .day-cell {{
-            opacity: 0;
-            transform-box: fill-box;
-            transform-origin: center;
-            transform: scale(0.35);
-            animation: reveal-cell 0.34s ease-out forwards;
-        }}
-
-        .level-0 {{
-            fill: #161b22;
-        }}
-
-        .level-1 {{
-            fill: #0e4429;
-        }}
-
-        .level-2 {{
-            fill: #006d32;
-        }}
-
-        .level-3 {{
-            fill: #26a641;
-        }}
-
-        .level-4 {{
-            fill: #39d353;
-        }}
-
-        .axis-label,
-        .month-label,
-        .legend-label,
-        .stat-primary,
-        .stat-secondary {{
-            font-family:
-                "Cascadia Code",
-                "SFMono-Regular",
-                Consolas,
-                "Liberation Mono",
-                monospace;
-        }}
-
-        .axis-label,
-        .month-label,
-        .legend-label {{
-            fill: #8b949e;
-            font-size: 12px;
-        }}
-
-        .stat-primary {{
-            fill: #c9d1d9;
-            font-size: 15px;
-            font-weight: 700;
-        }}
-
-        .stat-secondary {{
-            fill: #8b949e;
-            font-size: 13px;
-            font-weight: 600;
-        }}
-
-        .stats {{
-            opacity: 0;
-            animation: reveal-text 0.5s ease forwards;
-            animation-delay: 0.85s;
-        }}
-
-        @keyframes reveal-cell {{
-            from {{
-                opacity: 0;
-                transform: scale(0.35);
-            }}
-
-            to {{
-                opacity: 1;
-                transform: scale(1);
-            }}
-        }}
-
-        @keyframes reveal-text {{
-            from {{
-                opacity: 0;
-                transform: translateY(6px);
-            }}
-
-            to {{
-                opacity: 1;
-                transform: translateY(0);
-            }}
-        }}
-
-        @media (prefers-color-scheme: light) {{
-            .background {{
-                fill: #ffffff;
-                stroke: #d0d7de;
-            }}
-
-            .level-0 {{
-                fill: #ebedf0;
-            }}
-
-            .level-1 {{
-                fill: #9be9a8;
-            }}
-
-            .level-2 {{
-                fill: #40c463;
-            }}
-
-            .level-3 {{
-                fill: #30a14e;
-            }}
-
-            .level-4 {{
-                fill: #216e39;
-            }}
-
-            .axis-label,
-            .month-label,
-            .legend-label,
-            .stat-secondary {{
-                fill: #57606a;
-            }}
-
-            .stat-primary {{
-                fill: #24292f;
-            }}
-        }}
-
-        @media (prefers-reduced-motion: reduce) {{
-            .day-cell,
-            .stats {{
-                opacity: 1;
-                transform: none;
-                animation: none;
-            }}
-        }}
-    </style>
-
-    <rect
-        class="background"
-        x="0.5"
-        y="0.5"
-        width="{width - 1}"
-        height="{height - 1}"
-        rx="14"
-    />
-
-    {month_labels}
-
-    {day_labels}
-
-    {day_cells}
-
-    {legend}
-
-    {stats}
-</svg>
-"""
+    parts.append('</svg>')
+    return ''.join(parts)
 
 
 def main() -> None:
     try:
-        contribution_data = load_contribution_data()
-
-        svg_content = build_svg(
-            contribution_data
-        )
-
-        OUTPUT_FILE.write_text(
-            svg_content,
-            encoding="utf-8",
-        )
-
-        print(
-            f"Contribution heatmap created: "
-            f"{OUTPUT_FILE}"
-        )
-
+        data = json.loads(INPUT.read_text(encoding="utf-8"))
+        svg = render(data)
+        OUTPUT.write_text(svg, encoding="utf-8")
+        print(f"wrote {OUTPUT} ({len(svg)} bytes)")
     except Exception as error:
-        raise SystemExit(
-            f"Heatmap generation failed: {error}"
-        ) from error
+        raise SystemExit(f"Heatmap generation failed: {error}") from error
 
 
 if __name__ == "__main__":

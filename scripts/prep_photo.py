@@ -1,6 +1,6 @@
+"""Prepare a portrait for clean ASCII conversion."""
 from __future__ import annotations
 
-import io
 import sys
 from pathlib import Path
 
@@ -11,81 +11,36 @@ from rembg import remove
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+INPUT = Path(sys.argv[1]) if len(sys.argv) > 1 else PROJECT_ROOT / "source-photo.jpg"
+OUTPUT = Path(sys.argv[2]) if len(sys.argv) > 2 else PROJECT_ROOT / "source-prepped.png"
 
 
 def prepare_photo(input_path: Path, output_path: Path) -> None:
     if not input_path.exists():
-        raise FileNotFoundError(
-            f"Photo not found: {input_path}\n"
-            "Place your photo in the project root as source-photo.jpg"
-        )
+        raise FileNotFoundError(f"Photo not found: {input_path}")
 
-    print(f"Reading photo: {input_path.name}")
+    cutout = remove(Image.open(input_path).convert("RGBA"))
+    rgba = np.array(cutout)
+    rgb = rgba[:, :, :3]
+    alpha = rgba[:, :, 3]
 
-    # Remove the original background.
-    removed_background = remove(input_path.read_bytes())
-    subject = Image.open(io.BytesIO(removed_background)).convert("RGBA")
+    grayscale = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
+    clahe = cv2.createCLAHE(clipLimit=2.6, tileGridSize=(8, 8))
+    grayscale = clahe.apply(grayscale)
+    grayscale = cv2.convertScaleAbs(grayscale, alpha=1.05, beta=18)
 
-    # Remove unnecessary transparent space around the subject.
-    bounding_box = subject.getbbox()
+    mask = alpha.astype(np.float32) / 255.0
+    mask = cv2.GaussianBlur(mask, (0, 0), 1.0)
+    composed = grayscale.astype(np.float32) * mask + 255.0 * (1.0 - mask)
+    composed = np.clip(composed, 0, 255).astype(np.uint8)
 
-    if bounding_box:
-        subject = subject.crop(bounding_box)
-
-    # Create a clean white square canvas.
-    canvas_size = 900
-    margin = 70
-
-    subject.thumbnail(
-        (canvas_size - margin * 2, canvas_size - margin * 2),
-        Image.Resampling.LANCZOS,
-    )
-
-    canvas = Image.new(
-        "RGBA",
-        (canvas_size, canvas_size),
-        (255, 255, 255, 255),
-    )
-
-    x_position = (canvas_size - subject.width) // 2
-    y_position = (canvas_size - subject.height) // 2
-
-    canvas.alpha_composite(subject, (x_position, y_position))
-
-    # Convert the image to grayscale.
-    grayscale = np.array(canvas.convert("RGB").convert("L"))
-
-    # Improve local contrast so facial details work better as ASCII.
-    clahe = cv2.createCLAHE(
-        clipLimit=2.2,
-        tileGridSize=(8, 8),
-    )
-
-    enhanced = clahe.apply(grayscale)
-
-    # Blend the enhanced image with the original grayscale image.
-    final_image = cv2.addWeighted(
-        enhanced,
-        0.85,
-        grayscale,
-        0.15,
-        0,
-    )
-
-    Image.fromarray(final_image).save(output_path)
-
-    print(f"Prepared photo saved: {output_path}")
+    Image.fromarray(composed, mode="L").save(output_path)
+    print(f"wrote {output_path} {composed.shape}")
 
 
 def main() -> None:
-    input_name = sys.argv[1] if len(sys.argv) > 1 else "source-photo.jpg"
-    output_name = sys.argv[2] if len(sys.argv) > 2 else "source-prepped.png"
-
-    input_path = PROJECT_ROOT / input_name
-    output_path = PROJECT_ROOT / output_name
-
     try:
-        prepare_photo(input_path, output_path)
+        prepare_photo(INPUT, OUTPUT)
     except Exception as error:
         raise SystemExit(f"Photo preparation failed: {error}") from error
 
