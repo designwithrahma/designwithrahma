@@ -1,0 +1,476 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="720"
+    height="560"
+    viewBox="0 0 720 560"
+    role="img"
+    aria-labelledby="title description"
+>
+    <title id="title">Rahmathullah profile information</title>
+
+    <desc id="description">
+        An animated terminal-style profile card for Mohammed Rahmathullah.
+    </desc>
+
+    <defs>
+        <linearGradient
+            id="panel-border"
+            x1="0"
+            y1="0"
+            x2="1"
+            y2="1"
+        >
+            <stop offset="0%" stop-color="#58a6ff"/>
+            <stop offset="50%" stop-color="#8b949e"/>
+            <stop offset="100%" stop-color="#3fb950"/>
+        </linearGradient>
+    </defs>
+
+    <style>
+        .panel {
+            fill: #0d1117;
+            stroke: url(#panel-border);
+            stroke-width: 2;
+        }
+
+        .top-bar {
+            fill: #161b22;
+        }
+
+        .terminal-title,
+        .prompt,
+        .label,
+        .separator,
+        .value {
+            font-family:
+                "Cascadia Code",
+                "SFMono-Regular",
+                Consolas,
+                "Liberation Mono",
+                monospace;
+        }
+
+        .terminal-title {
+            fill: #8b949e;
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .prompt {
+            fill: #3fb950;
+            font-size: 22px;
+            font-weight: 700;
+            opacity: 0;
+            animation: reveal 0.35s ease forwards;
+            animation-delay: 0.15s;
+        }
+
+        .cursor {
+            fill: #58a6ff;
+            animation: blink 0.9s steps(2, start) infinite;
+        }
+
+        .info-row {
+            opacity: 0;
+            transform: translateX(-12px);
+            animation: reveal-row 0.4s ease-out forwards;
+        }
+
+        .label {
+            fill: #8b949e;
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .separator {
+            fill: #58a6ff;
+            font-size: 17px;
+            font-weight: 700;
+        }
+
+        .value {
+            fill: #c9d1d9;
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .footer {
+            fill: #6e7681;
+            font-family:
+                "Cascadia Code",
+                "SFMono-Regular",
+                Consolas,
+                monospace;
+            font-size: 14px;
+            opacity: 0;
+            animation: reveal 0.4s ease forwards;
+            animation-delay: 1.8s;
+        }
+
+        @keyframes reveal {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes reveal-row {
+            from {
+                opacity: 0;
+                transform: translateX(-12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes blink {
+            0%,
+            45% {
+                opacity: 1;
+            }
+
+            46%,
+            100% {
+                opacity: 0;
+            }
+        }
+
+        @media (prefers-color-scheme: light) {
+            .panel {
+                fill: #ffffff;
+            }
+
+            .top-bar {
+                fill: #f6f8fa;
+            }
+
+            .terminal-title,
+            .label {
+                fill: #57606a;
+            }
+
+            .value {
+                fill: #24292f;
+            }
+
+            .footer {
+                fill: #6e7781;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .prompt,
+            .info-row,
+            .footer {
+                opacity: 1;
+                transform: none;
+                animation: none;
+            }
+
+            .cursor {
+                animation: none;
+            }
+        }
+    </style>
+
+    <rect
+        class="panel"
+        x="1"
+        y="1"
+        width="718"
+        height="558"
+        rx="18"
+    />
+
+    <path
+        class="top-bar"
+        d="
+            M 19 1
+            H 701
+            Q 719 1 719 19
+            V 62
+            H 1
+            V 19
+            Q 1 1 19 1
+            Z
+        "
+    />
+
+    <circle cx="28" cy="31" r="7" fill="#ff5f56"/>
+    <circle cx="52" cy="31" r="7" fill="#ffbd2e"/>
+    <circle cx="76" cy="31" r="7" fill="#27c93f"/>
+
+    <text
+        class="terminal-title"
+        x="104"
+        y="38"
+    >rahma@designwithrahma — profile</text>
+
+    <text
+        class="prompt"
+        x="44"
+        y="106"
+    >$ whoami</text>
+
+    <rect
+        class="cursor"
+        x="158"
+        y="86"
+        width="12"
+        height="24"
+        rx="2"
+    />
+
+    
+            <g
+                class="info-row"
+                style="animation-delay: 0.45s"
+            >
+                <text
+                    class="label"
+                    x="54"
+                    y="150"
+                >name</text>
+
+                <text
+                    class="separator"
+                    x="165"
+                    y="150"
+                >:</text>
+
+                <text
+                    class="value"
+                    x="192"
+                    y="150"
+                >Mohammed Rahmathullah</text>
+            </g>
+            
+            <g
+                class="info-row"
+                style="animation-delay: 0.57s"
+            >
+                <text
+                    class="label"
+                    x="54"
+                    y="186"
+                >username</text>
+
+                <text
+                    class="separator"
+                    x="165"
+                    y="186"
+                >:</text>
+
+                <text
+                    class="value"
+                    x="192"
+                    y="186"
+                >@designwithrahma</text>
+            </g>
+            
+            <g
+                class="info-row"
+                style="animation-delay: 0.69s"
+            >
+                <text
+                    class="label"
+                    x="54"
+                    y="222"
+                >role</text>
+
+                <text
+                    class="separator"
+                    x="165"
+                    y="222"
+                >:</text>
+
+                <text
+                    class="value"
+                    x="192"
+                    y="222"
+                >UI/UX Designer &amp; Full-Stack Developer</text>
+            </g>
+            
+            <g
+                class="info-row"
+                style="animation-delay: 0.81s"
+            >
+                <text
+                    class="label"
+                    x="54"
+                    y="258"
+                >focus</text>
+
+                <text
+                    class="separator"
+                    x="165"
+                    y="258"
+                >:</text>
+
+                <text
+                    class="value"
+                    x="192"
+                    y="258"
+                >Digital Products &amp; Visual Experiences</text>
+            </g>
+            
+            <g
+                class="info-row"
+                style="animation-delay: 0.93s"
+            >
+                <text
+                    class="label"
+                    x="54"
+                    y="294"
+                >building</text>
+
+                <text
+                    class="separator"
+                    x="165"
+                    y="294"
+                >:</text>
+
+                <text
+                    class="value"
+                    x="192"
+                    y="294"
+                >HBS Business Systems</text>
+            </g>
+            
+            <g
+                class="info-row"
+                style="animation-delay: 1.05s"
+            >
+                <text
+                    class="label"
+                    x="54"
+                    y="330"
+                >project</text>
+
+                <text
+                    class="separator"
+                    x="165"
+                    y="330"
+                >:</text>
+
+                <text
+                    class="value"
+                    x="192"
+                    y="330"
+                >MONO//SHIFT</text>
+            </g>
+            
+            <g
+                class="info-row"
+                style="animation-delay: 1.17s"
+            >
+                <text
+                    class="label"
+                    x="54"
+                    y="366"
+                >stack</text>
+
+                <text
+                    class="separator"
+                    x="165"
+                    y="366"
+                >:</text>
+
+                <text
+                    class="value"
+                    x="192"
+                    y="366"
+                >Next.js · TypeScript · PostgreSQL · Python</text>
+            </g>
+            
+            <g
+                class="info-row"
+                style="animation-delay: 1.29s"
+            >
+                <text
+                    class="label"
+                    x="54"
+                    y="402"
+                >creative</text>
+
+                <text
+                    class="separator"
+                    x="165"
+                    y="402"
+                >:</text>
+
+                <text
+                    class="value"
+                    x="192"
+                    y="402"
+                >Photoshop · Figma · Visual Storytelling</text>
+            </g>
+            
+            <g
+                class="info-row"
+                style="animation-delay: 1.41s"
+            >
+                <text
+                    class="label"
+                    x="54"
+                    y="438"
+                >location</text>
+
+                <text
+                    class="separator"
+                    x="165"
+                    y="438"
+                >:</text>
+
+                <text
+                    class="value"
+                    x="192"
+                    y="438"
+                >Sri Lanka</text>
+            </g>
+            
+            <g
+                class="info-row"
+                style="animation-delay: 1.53s"
+            >
+                <text
+                    class="label"
+                    x="54"
+                    y="474"
+                >website</text>
+
+                <text
+                    class="separator"
+                    x="165"
+                    y="474"
+                >:</text>
+
+                <text
+                    class="value"
+                    x="192"
+                    y="474"
+                >designwithrahma.io</text>
+            </g>
+            
+
+    <line
+        x1="44"
+        y1="518"
+        x2="676"
+        y2="518"
+        stroke="#30363d"
+        stroke-width="1"
+    />
+
+    <text
+        class="footer"
+        x="44"
+        y="544"
+    >building thoughtful products, one commit at a time.</text>
+</svg>
